@@ -12,8 +12,16 @@ Button.propTypes = {
 const small_btn_styles = `rounded-full bg-yellow-500 px-[18px] py-[7px] text-[12px] font-bold uppercase transition-all duration-200 hover:bg-yellow-400 focus:outline-none focus:ring focus:ring-yellow-500 focus:ring-opacity-0 active:bg-yellow-500 disabled:cursor-not-allowed`;
 const base_styles = `mt-[20px] rounded-full bg-yellow-500 px-[18px] py-[10px] text-[18px] font-bold uppercase transition-all duration-200 hover:bg-yellow-400 focus:outline-none focus:ring focus:ring-yellow-500 focus:ring-opacity-0 active:bg-yellow-500 disabled:cursor-not-allowed`;
 const grayed_out = `mt-[20px] rounded-full border-[3px] text-stone-400 border-stone-400 px-[18px] py-[7px] text-[18px] font-bold uppercase transition-all duration-200 hover:bg-stone-300 focus:outline-none focus:ring focus:ring-yellow-500 focus:ring-opacity-0 active:bg-yellow-500 disabled:cursor-not-allowed`;
+const round = `rounded-full bg-yellow-500 flex items-center justify-center w-[35px] h-[35px] text-[14px] font-bold uppercase transition-all duration-200 hover:bg-yellow-400 focus:outline-none focus:ring focus:ring-yellow-500 focus:ring-opacity-0 active:bg-yellow-500 disabled:cursor-not-allowed`;
 
 export default function Button({ children, disabled, type, to, onClick }) {
+  if (type === "round" && onClick) {
+    return (
+      <button className={`${round}`} onClick={onClick}>
+        <div>{children}</div>
+      </button>
+    );
+  }
   if (onClick) {
     return (
       <button

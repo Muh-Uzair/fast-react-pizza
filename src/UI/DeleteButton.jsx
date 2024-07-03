@@ -13,7 +13,7 @@ export default function DeleteButton({ item }) {
   return (
     <Button
       type={"small"}
-      onClick={() => reduxDispatch(deleteFromCart(item.pizzaId))}
+      onClick={() => reduxDispatch(deleteFromCart(item?.pizzaId || item?.id))}
     >
       Delete
     </Button>

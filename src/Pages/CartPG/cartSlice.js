@@ -17,10 +17,32 @@ const cartSlice = createSlice({
     deleteFromCart(state, action) {
       state.cart = state.cart.filter((val) => val.pizzaId !== action.payload);
     },
+    increaseQt(state, action) {
+      const itemIndex = state.cart.findIndex(
+        (val) => val.pizzaId === action.payload,
+      );
+
+      state.cart[itemIndex].quantity += 1;
+      state.cart[itemIndex].totalPrice =
+        state.cart[itemIndex].quantity * state.cart[itemIndex].unitPrice;
+    },
+    decreaseQt(state, action) {
+      const itemIndex = state.cart.findIndex(
+        (val) => val.pizzaId === action.payload,
+      );
+
+      state.cart[itemIndex].quantity -= 1;
+      state.cart[itemIndex].totalPrice =
+        state.cart[itemIndex].quantity * state.cart[itemIndex].unitPrice;
+
+      if (state.cart[itemIndex].quantity === 0)
+        cartSlice.caseReducers.deleteFromCart(state, action);
+    },
   },
 });
 
-export const { addItem, clearCart, deleteFromCart } = cartSlice.actions;
+export const { addItem, clearCart, deleteFromCart, increaseQt, decreaseQt } =
+  cartSlice.actions;
 export default cartSlice.reducer;
 
 export function getCart(state) {

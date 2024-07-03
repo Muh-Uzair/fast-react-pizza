@@ -3,6 +3,7 @@ import Button from "../../UI/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../CartPG/cartSlice";
 import DeleteButton from "../../UI/DeleteButton";
+import UpdateCartQuantity from "../CartPG/UpdateCartQuantity";
 
 MyMenuItem.propTypes = {
   val: PropTypes.object,
@@ -13,6 +14,10 @@ export default function MyMenuItem({ val, i }) {
   const { id, name, unitPrice } = val;
   const reduxDispatch = useDispatch();
   const cart = useSelector((state) => state.cart.cart);
+
+  // if (cart[id]?.quantity > 0) {
+  //   console.log(cart[id]);
+  // }
 
   function handleButtonAddCart() {
     const newItem = {
@@ -64,7 +69,10 @@ export default function MyMenuItem({ val, i }) {
 
           {!val.soldOut &&
             (checkExistenceInCart() ? (
-              <DeleteButton />
+              <div className="flex gap-4">
+                <UpdateCartQuantity id={id} />
+                <DeleteButton item={cart.find((item) => item.pizzaId === id)} />
+              </div>
             ) : (
               <Button onClick={() => handleButtonAddCart()} type="small">
                 Add to cart

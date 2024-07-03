@@ -1,6 +1,7 @@
 import DeleteButton from "../../UI/DeleteButton";
 import { formatCurrency } from "../../Utilities/helpers";
 import PropTypes from "prop-types";
+import UpdateCartQuantity from "./UpdateCartQuantity";
 
 CartItem.propTypes = {
   item: PropTypes.object,
@@ -20,6 +21,7 @@ function CartItem({ item, key_prop }) {
       </p>
       <div className="mb-[10px] flex items-center justify-between sm:space-x-3">
         <p className="font-medium italic">{formatCurrency(totalPrice)}</p>
+        <UpdateCartQuantity id={item.pizzaId || item.id} />
         <DeleteButton item={item} />
       </div>
     </li>
