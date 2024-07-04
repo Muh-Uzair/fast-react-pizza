@@ -3,7 +3,12 @@
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../Services/apiRestaurant";
 import Button from "../../UI/Button";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import EmptyCart from "../CartPG/EmptyCart";
+import { formatCurrency } from "../../Utilities/helpers";
+import { useState } from "react";
+import { getTotalPrice } from "../CartPG/cartSlice";
+import { fetchAddress } from "../UserPG/userSlice";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -11,38 +16,52 @@ const isValidPhone = (str) =>
     str,
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: "Mediterranean",
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: "Vegetable",
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: "Spinach and Mushroom",
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
+// const fakeCart = [
+//   {
+//     pizzaId: 12,
+//     name: "Mediterranean",
+//     quantity: 2,
+//     unitPrice: 16,
+//     totalPrice: 32,
+//   },
+//   {
+//     pizzaId: 6,
+//     name: "Vegetable",
+//     quantity: 1,
+//     unitPrice: 13,
+//     totalPrice: 13,
+//   },
+//   {
+//     pizzaId: 11,
+//     name: "Spinach and Mushroom",
+//     quantity: 1,
+//     unitPrice: 15,
+//     totalPrice: 15,
+//   },
+// ];
 
 function CreateOrder() {
   // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
-  console.log(cart);
-
+  const cart = useSelector((state) => state.cart.cart);
+  const totalPrice = useSelector(getTotalPrice);
   const navigation = useNavigation();
   const formErrors = useActionData();
-  const userName = useSelector((state) => state.user.userName);
+  const {
+    userName,
+    status: addressStatus,
+    address,
+    error,
+    position,
+  } = useSelector((state) => state.user);
+  const [priorityOrder, setPriorityOrder] = useState(false);
+  const reduxDispatch = useDispatch();
+
+  if (cart.length === 0) return <EmptyCart />;
+
+  // function getPositionClicked() {
+  //   console.log("get position clicked");
+  //   reduxDispatch(fetchAddress());
+  // }
 
   return (
     <div className="mx-[10px]">
@@ -74,7 +93,7 @@ function CreateOrder() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-[3px] sm:mb-3 sm:flex-row">
+        <div className="relative flex flex-col gap-[3px] sm:mb-3 sm:flex-row">
           <label className="sm:basis-36">Address</label>
           <div className="grow">
             <input
@@ -82,7 +101,28 @@ function CreateOrder() {
               name="address"
               required
               className="input w-full"
+              disabled={addressStatus === "loading"}
+              defaultValue={address}
             />
+            {addressStatus === "error" && (
+              <p className="mt-2 rounded-full bg-red-200 pl-3 font-semibold text-red-700">
+                {error}
+              </p>
+            )}
+            {!address.length > 0 && (
+              <span className="absolute right-[3px] top-[1.9px]">
+                <Button
+                  type={"small"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    reduxDispatch(fetchAddress());
+                  }}
+                  disabled={addressStatus === "loading"}
+                >
+                  Get Position
+                </Button>
+              </span>
+            )}
           </div>
         </div>
 
@@ -91,6 +131,8 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
+            value={priorityOrder}
+            onClick={() => setPriorityOrder((priorityOrder) => !priorityOrder)}
             // value={withPriority}
             // onChange={(e) => setWithPriority(e.target.checked)}
             className="h-6 w-6 accent-yellow-400 outline-none focus:border-none focus:ring-[1px] focus:ring-yellow-400"
@@ -100,8 +142,23 @@ function CreateOrder() {
 
         <div className="mt-[10px]">
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <Button disabled={navigation.state === "submitting"}>
-            {navigation.state === "submitting" ? "Submitting..." : "Order now"}
+          <input
+            type="hidden"
+            name="position"
+            value={
+              position.latitude && position.longitude
+                ? `${position.longitude} ,${position.latitude} `
+                : ""
+            }
+          />
+          <Button
+            disabled={
+              navigation.state === "submitting" || addressStatus === "loading"
+            }
+          >
+            {navigation.state === "submitting"
+              ? "Submitting..."
+              : `Order now ${formatCurrency(priorityOrder ? totalPrice + 2 : totalPrice)}`}
           </Button>
         </div>
       </Form>
@@ -116,7 +173,7 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === "on",
+    priority: data.priority === "true",
   };
 
   // form validation

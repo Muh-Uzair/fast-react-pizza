@@ -1,14 +1,5 @@
 // Test ID: IIDSAT
 
-import {
-  calcMinutesLeft,
-  formatCurrency,
-  formatDate,
-} from "../../Utilities/helpers";
-import { getOrder } from "../../Services/apiRestaurant";
-import { useLoaderData } from "react-router-dom";
-import OrderItem from "../OrderPG/OrderItem";
-
 // const order = {
 //   id: "ABCDEF",
 //   customer: "Jonas",
@@ -44,9 +35,22 @@ import OrderItem from "../OrderPG/OrderItem";
 //   priorityPrice: 19,
 // };
 
+import {
+  calcMinutesLeft,
+  formatCurrency,
+  formatDate,
+} from "../../Utilities/helpers";
+import { getOrder } from "../../Services/apiRestaurant";
+import { useFetcher, useLoaderData } from "react-router-dom";
+import OrderItem from "../OrderPG/OrderItem";
+import store from "../../../store";
+import { clearCart } from "../CartPG/cartSlice";
+import { useEffect } from "react";
+import UpdateOrderPriority from "./UpdateOrderPriority";
+
 function Order() {
   const order = useLoaderData();
-  console.log(order);
+  // console.log(order);
   // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
   const {
     id,
@@ -58,7 +62,16 @@ function Order() {
     cart,
   } = order;
   const deliveryIn = calcMinutesLeft(estimatedDelivery);
-  console.log(id, cart);
+  // console.log(id, cart);
+
+  const fetcher = useFetcher();
+
+  useEffect(() => {
+    function getMenu() {
+      fetcher.load("/menu");
+    }
+    if (!fetcher.data && fetcher.state === "idle") getMenu();
+  });
 
   return (
     <div className="space-y-8 px-[20px] py-[10px]">
@@ -88,7 +101,17 @@ function Order() {
 
       <ul className="divide-y divide-stone-200 border-b border-t">
         {cart.map((val, i) => (
-          <OrderItem item={val} key={i} />
+          <OrderItem
+            item={val}
+            key={i}
+            ingredients={
+              fetcher.data
+                ? fetcher.data.find((val2) => val2.id === val.pizzaId)
+                    ?.ingredients
+                : []
+            }
+            isLoadingIngredients={fetcher.state === "loading"}
+          />
         ))}
       </ul>
 
@@ -99,6 +122,8 @@ function Order() {
           To pay on delivery: {formatCurrency(orderPrice + priorityPrice)}
         </p>
       </div>
+
+      {!priority && <UpdateOrderPriority />}
     </div>
   );
 }
@@ -106,7 +131,8 @@ function Order() {
 export async function loader({ params }) {
   // console.log(params.orderID);
   const order_data = await getOrder(params.orderID);
-  console.log(order_data);
+  // console.log(order_data);
+  store.dispatch(clearCart());
   return order_data;
 }
 

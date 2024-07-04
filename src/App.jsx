@@ -5,7 +5,9 @@ import Cart from "./Pages/CartPG/Cart";
 import CreateOrder, {
   action as createOrderAction,
 } from "./Pages/OrderPG/CreateOrder";
+
 import Order, { loader as orderLoader } from "./Pages/OrderPG/Order";
+import { action as UpdatePriorityAction } from "./Pages/OrderPG/UpdateOrderPriority";
 import AppLayout from "./UI/AppLayout";
 import Error from "./UI/Error";
 
@@ -30,7 +32,12 @@ const router = createBrowserRouter([
         element: <CreateOrder />,
         action: createOrderAction,
       },
-      { path: "/order/:orderID", element: <Order />, loader: orderLoader },
+      {
+        path: "/order/:orderID",
+        element: <Order />,
+        loader: orderLoader,
+        action: UpdatePriorityAction,
+      },
     ],
   },
 ]);

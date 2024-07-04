@@ -3,23 +3,24 @@ import { formatCurrency } from "../../Utilities/helpers";
 
 OrderItem.propTypes = {
   item: PropTypes.object,
-  isLoadingIngredients: PropTypes.bool,
+  key_prop: PropTypes.number,
   ingredients: PropTypes.array,
+  isLoadingIngredients: PropTypes.bool,
 };
 
-function OrderItem({ item, isLoadingIngredients, ingredients }) {
+// isLoadingIngredients ,  ingredients,
+function OrderItem({ item, key_prop, ingredients, isLoadingIngredients }) {
   const { quantity, name, totalPrice } = item;
 
-  console.log(isLoadingIngredients, ingredients);
-
   return (
-    <li className="py-3">
+    <li className="py-3" key={key_prop}>
       <div className="flex items-center justify-between gap-4 text-sm">
         <p>
           <span className="font-bold">{quantity}&times;</span> {name}
         </p>
         <p className="font-bold">{formatCurrency(totalPrice)}</p>
       </div>
+      <div>{isLoadingIngredients ? "Loading..." : ingredients.join(", ")}</div>
     </li>
   );
 }
